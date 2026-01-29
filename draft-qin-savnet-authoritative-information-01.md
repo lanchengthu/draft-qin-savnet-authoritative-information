@@ -51,13 +51,13 @@ Source Address Validation (SAV) prevents source address spoofing. This document 
 
 # Introduction {#sec-intro}
 
-Source Address Validation (SAV) prevents source address spoofing and enforces BCP38 [RFC2827], BCP84 [RFC3704], and [RFC8704]. Networks rely on authoritative information to determine which source addresses are legitimate. However, networks may encounter situations where this information is missing or conflicting.
+Source Address Validation (SAV) prevents source address spoofing and enforces BCP38 [RFC2827], BCP84 [RFC3704], and [RFC8704]. SAV relies on authoritative information to determine which source addresses are legitimate. However, SAV may encounter situations where this information is missing or conflicting.
 
 This document provides a conceptual framework for understanding authoritative information in the context of SAVNET, including:
 
 - What constitutes authoritative information and which sources can be trusted.
 
-- How networks should handle missing authoritative information.
+- How to handle missing authoritative information.
 
 - How to reconcile conflicting authoritative sources.
 
@@ -94,43 +94,40 @@ By defining authoritative information in this way, SAV mechanisms can rely on so
 
 # When Authoritative Information Is Missing
 
-Networks may encounter situations where authoritative information about a particular prefix or source entity is unavailable. Such situations can arise for various reasons, including:
+SAV may encounter situations where authoritative information about a particular prefix or source entity is unavailable. Such situations can arise for various reasons, including:
 
 - The relevant RPKI objects (e.g., ROAs, ASPAs, TOAs) do not exist or have not yet been published.
 
 - Local configuration has not been defined for a newly connected host, non-BGP customer network, or external AS.
 
-When authoritative information is missing, networks must decide how to handle traffic from the corresponding source addresses. Several approaches have been considered:
+When authoritative information is missing, SAV solutions must decide how to handle traffic from the corresponding source addresses. Several approaches have been considered:
 
 - Conservative approach: Treat the source addresses as unauthorized and block traffic. This minimizes the risk of accepting spoofed packets but may result in legitimate traffic being dropped.
 
 - Permissive approach: Allow traffic from the source addresses by default. This avoids accidental disruption of legitimate communications but increases the risk of accepting spoofed packets.
 
-- Contextual or policy-based approach: Apply local policies or heuristics to make decisions when authoritative information is missing. Contextual information may include trusted routing information, historical traffic patterns, or operational context. Given the current limited deployment of authoritative information, this approach is often the only practical way to make incremental progress in enforcing source address validation. It allows operators to mitigate spoofing risk while accommodating the realities of incomplete authoritative data.
+- Contextual approach: Use non-authoritative or contextual information when authoritative information is missing. Non-authoritative or contextual information may include trusted routing information, historical traffic patterns, or operational context. Given the current limited deployment of authoritative information, this approach is often the only practical means to achieve incremental progress in SAV enforcement. 
 
-Even when contextual or trusted information is used, uncertainty remains. Trusted data may be missing, stale, or inconsistent for specific prefixes or ASes. Operators must therefore decide how enforcement should behave under these conditions. Options include strict blocking, permissive acceptance, or intermediate strategies, such as permitting traffic while logging and investigating. [I-D.ietf-savnet-general-sav-capabilities] defines a broader set of traffic-handling actions, including rate limiting, traffic redirection, counting, sampling, and monitoring, which can help operators manage uncertainty while maintaining operational continuity.
-
-Operators should document their chosen strategy and apply it consistently across interfaces. While authoritative information provides the strongest basis for high-confidence filtering decisions, fallback strategies based on contextual information offer a practical path for incremental deployment and operational learning.
+Even when non-authoritative or contextual information (e.g., trusted routing information) is used, such information may also be missing for specific prefixes or ASes. Operators must determine how enforcement should behave under uncertainty. Possible behaviors include strict blocking, permissive acceptance, or intermediate strategies, such as permitting traffic while logging and investigating. [I-D.ietf-savnet-general-sav-capabilities] defines a broader set of traffic-handling actions, including rate limiting, traffic redirection, counting, sampling, and monitoring, which can help operators manage uncertainty while maintaining operational continuity.
 
 
 # When Authoritative Sources Conflict
 
-Networks may encounter situations where multiple sources of authoritative information provide overlapping or apparently conflicting statements about the legitimacy of a source address or prefix. Such conflicts can arise, for example, when:
+SAV may encounter situations where multiple sources of authoritative information provide overlapping or apparently conflicting statements about the legitimacy of a source address or prefix. Such conflicts can arise, for example, when:
 
 - Different RPKI objects (ROAs, ASPAs, TOAs) provide overlapping assertions for the same prefix.
 
 - Local or static configurations overlap with information from other authoritative sources.
 
-Networks should treat all authoritative sources as equally credible and merge information from all sources. Any address or prefix authorized by at least one source should be considered legitimate. This approach ensures that no legitimate source address is incorrectly blocked, reducing improper blocks while maintaining reliable SAV enforcement.
+SAV solutions should treat all authoritative sources as equally credible and merge information from all sources. Any address or prefix authorized by at least one source should be considered legitimate. This approach ensures that no legitimate source address is incorrectly blocked, reducing improper blocks while maintaining reliable SAV enforcement.
 
-Fallback and reference to non-authoritative information:
-When authoritative information is incomplete or missing, non-authoritative information—such as routing data—may be used as a reference within a contextual or policy-based approach (see Section 3) to help inform decisions, but it cannot be relied upon as definitive.
+Non-authoritative or contextual information may be consulted as a reference to support operational understanding (see Section 3), but it must not override or negate any authorization provided by an authoritative source.
 
 # Discussion and Next Steps
 
 This document provides a conceptual framework for understanding authoritative information in SAVNET, addressing scenarios where information is missing or conflicting. The following points highlight key considerations for SAV design and operations:
 
-- Definition of authoritative information: Networks must rely on sources that are verifiable, secure, timely, and maintained by recognized authorities, such as RPKI objects (ROAs, ASPAs, TOAs), SAV-specific signaling with security guarantees, or operator-defined local/static configuration.
+- Definition of authoritative information: SAV must rely on sources that are verifiable, secure, timely, and maintained by recognized authorities, such as RPKI signed objects (ROAs, ASPAs, TOAs), SAV-specific signaling with security guarantees, or operator-defined local/static configuration.
 
 - Handling missing information: When authoritative information is unavailable, fallback strategies—conservative, permissive, or contextual/policy-based using non-authoritative information as reference—should be defined.
 
